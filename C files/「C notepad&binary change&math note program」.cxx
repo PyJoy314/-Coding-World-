@@ -53,183 +53,94 @@ int Chat() {
     char** C = NULL;
     char Nick[256];
 
+    double A, B, C_val;
+    int Z;
+    int N;
+
     printf("input the Nickname: ");
     if (fgets(Nick, sizeof(Nick), stdin)) {
         Nick[strcspn(Nick, "\n")] = 0;
     }
-
-    printf("%s user welcome to my C one line notepad&2binary string change\n", Nick);
+    printf("%s user welcome to my Python one line notepad&2binary string change\n", Nick);
     printf("\n");
 
     while (1) {
         char input_message[1024];
-
-        // ===== 텍스트 입력 =====
         printf("input the txt when want to exit input the exit: ");
-
         if (!fgets(input_message, sizeof(input_message), stdin)) {
             break;
         }
-
         input_message[strcspn(input_message, "\n")] = 0;
 
-        // exit 입력 시 종료
-        if (is_exit_command(input_message)) {
-            printf("Program exit.\n");
-            break;
-        }
-
-        // ===== 텍스트 저장 =====
         C = realloc(C, (CM + 1) * sizeof(char*));
-        if (C == NULL) {
-            printf("Memory allocation error.\n");
-            break;
-        }
-
         C[CM] = custom_strdup(input_message);
 
-        // ===== Binary 변환 =====
-        char* joined_binary_string =
-            get_joined_binary_string(input_message);
+        char* joined_binary_string = get_joined_binary_string(input_message);
+        M += (long long)strlen(input_message) + (long long)strlen(joined_binary_string);
 
-        if (joined_binary_string == NULL) {
-            printf("Memory allocation error.\n");
-            break;
-        }
-
-        // $ 정보 계산
-        M += (long long)strlen(input_message)
-           + (long long)strlen(joined_binary_string);
-
-
-        // ==================================================
-        // ===== 계산 부분 =====
-        // ==================================================
-
-        double A, B, C_val;
-        int Z;
-        int N;
-
-        printf("\nInput 3 numbers: ");
-
-        if (scanf("%lf %lf %lf", &A, &B, &C_val) != 3) {
-            printf("Invalid number input.\n");
-
-            // 입력 버퍼 비우기
-            int ch;
-            while ((ch = getchar()) != '\n' && ch != EOF);
-
+        if (is_exit_command(input_message)) {
             free(joined_binary_string);
             break;
         }
 
-        // 숫자 입력 뒤 남은 '\n' 제거
-        while (getchar() != '\n');
+        printf("%s %lld %s\n", Nick, M, C[CM]);
+        printf("change to binary string: %s\n", joined_binary_string);
 
-        printf("\nEngineering Calculator\n");
-
-        printf("A + B + C = %.2lf\n",
-               A + B + C_val);
-
-        printf("A - B - C = %.2lf\n",
-               A - B - C_val);
-
-        printf("A * B * C = %.2lf\n",
-               A * B * C_val);
-
-        if (B != 0 && C_val != 0) {
-            printf("A / B / C = %.6lf\n",
-                   A / B / C_val);
-        } else {
-            printf("A / B / C = Cannot divide by zero\n");
-        }
-
-
-        // ===== Comparison =====
-        printf("\nComparison\n");
-
-        Z = (A > B);
-        printf("A > B = %d\n", Z);
-
-        Z = (A < B);
-        printf("A < B = %d\n", Z);
-
-        Z = (A >= B);
-        printf("A >= B = %d\n", Z);
-
-        Z = (A <= B);
-        printf("A <= B = %d\n", Z);
-
-        Z = (A == B);
-        printf("A == B = %d\n", Z);
-
-        Z = (A != B);
-        printf("A != B = %d\n", Z);
-
-
-        // ===== Square =====
-        printf("\nSquare\n");
-
-        printf("A ^ 2 = %.2lf\n", A * A);
-        printf("B ^ 2 = %.2lf\n", B * B);
-        printf("C ^ 2 = %.2lf\n", C_val * C_val);
-
-
-        // ===== Cube =====
-        printf("\nCube\n");
-
-        printf("A ^ 3 = %.2lf\n", A * A * A);
-        printf("B ^ 3 = %.2lf\n", B * B * B);
-        printf("C ^ 3 = %.2lf\n",
-               C_val * C_val * C_val);
-
-
-        // ===== Increment =====
-        printf("\nIncrement\n");
-
-        N = 10;
-
-        printf("N = %d\n", N);
-
-        N++;
-        printf("N++ = %d\n", N);
-
-        N++;
-        printf("N++ = %d\n", N);
-
-        printf("N = %d\n", N);
-
-
-        // ==================================================
-        // ===== 계산이 끝난 다음 텍스트 정보 출력 =====
-        // ==================================================
-
-        printf("\n");
-
-        printf("%s %lld$ %s\n",
-               Nick,
-               M,
-               C[CM]);
-
-        printf("change to binary string: %s\n",
-               joined_binary_string);
-
-        printf("\n");
-
-
-        // 다음 입력을 위해 정리
         free(joined_binary_string);
-
         CM++;
     }
 
-
-    // ===== 메모리 정리 =====
     for (int i = 0; i < CM; i++) {
         free(C[i]);
     }
-
     free(C);
+
+    printf("\nInput 3 numbers: ");
+    scanf("%lf %lf %lf", &A, &B, &C_val);
+    while (getchar() != '\n');
+
+    printf("\nEngineering Calculator\n");
+    printf("A + B + C = %.2lf\n", A + B + C_val);
+    printf("A - B - C = %.2lf\n", A - B - C_val);
+    printf("A * B * C = %.2lf\n", A * B * C_val);
+    if (B != 0 && C_val != 0) {
+        printf("A / B / C = %.6lf\n", A / B / C_val);
+    } else {
+        printf("A / B / C = Cannot divide by zero\n");
+    }
+
+    printf("\nComparison\n");
+    Z = (A > B);
+    printf("A > B = %d\n", Z);
+    Z = (A < B);
+    printf("A < B = %d\n", Z);
+    Z = (A >= B);
+    printf("A >= B = %d\n", Z);
+    Z = (A <= B);
+    printf("A <= B = %d\n", Z);
+    Z = (A == B);
+    printf("A == B = %d\n", Z);
+    Z = (A != B);
+    printf("A != B = %d\n", Z);
+
+    printf("\nSquare\n");
+    printf("A ^ 2 = %.2lf\n", A * A);
+    printf("B ^ 2 = %.2lf\n", B * B);
+    printf("C ^ 2 = %.2lf\n", C_val * C_val);
+
+    printf("\nCube\n");
+    printf("A ^ 3 = %.2lf\n", A * A * A);
+    printf("B ^ 3 = %.2lf\n", B * B * B);
+    printf("C ^ 3 = %.2lf\n", C_val * C_val * C_val);
+
+    printf("\nIncrement\n");
+    N = 10;
+    printf("N = %d\n", N);
+    N++;
+    printf("N++ = %d\n", N);
+    N++;
+    printf("N++ = %d\n", N);
+    printf("N = %d\n", N);
 
     return 0;
 }
