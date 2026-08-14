@@ -10,7 +10,7 @@ char* custom_strdup(const char* s)
 {
     size_t len = strlen(s) + 1;
 
-    char* d = malloc(len);
+    char* d = (char*)malloc(len);
 
     if (d == NULL)
         return NULL;
@@ -34,7 +34,7 @@ char* get_joined_binary_string(const char* input_message)
 
     if (len == 0)
     {
-        char* empty = malloc(1);
+        char* empty = (char*)malloc(1);
 
         if (empty == NULL)
             return NULL;
@@ -46,7 +46,7 @@ char* get_joined_binary_string(const char* input_message)
 
     size_t binary_len = len * 8 + (len - 1);
 
-    char* result = malloc(binary_len + 1);
+    char* result = (char*)malloc(binary_len + 1);
 
     if (result == NULL)
         return NULL;
@@ -237,7 +237,7 @@ int Chat()
            텍스트 저장
            ================================================= */
         char** temp =
-            realloc(
+            (char**)realloc(
                 C,
                 (CM + 1) * sizeof(char*)
             );
@@ -323,16 +323,18 @@ int Chat()
                 &B,
                 &C_val) != 3)
         {
-            printf("Invalid number input.\n");
+            printf("Invalid number input.");
 
 
             /* 입력 버퍼 비우기 */
-            int ch;
-
-            while ((ch = getchar()) != '\n' &&
-                   ch != EOF)
             {
-                /* clear buffer */
+                int ch;
+
+                while ((ch = getchar()) != '\n' &&
+                       ch != EOF)
+                {
+                    /* clear buffer */
+                }
             }
 
 
@@ -542,6 +544,7 @@ int Chat()
 
         N++;
 
+
         printf(
             "N++ = %d\n",
             N
@@ -549,6 +552,7 @@ int Chat()
 
 
         N++;
+
 
         printf(
             "N++ = %d\n",
@@ -563,6 +567,7 @@ int Chat()
 
 
         N--;
+
 
         printf(
             "N-- = %d\n",
