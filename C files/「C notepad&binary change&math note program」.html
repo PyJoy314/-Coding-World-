@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Program Web Emulator</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: "Courier New", Courier, monospace;
+            padding: 20px;
+            margin: 0;
+        }
+
+        #terminal {
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: #00ff00;
+            margin-right: 8px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            flex-grow: 1;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            color: #00ff00;
+        }
+
+        th, td {
+            border: 1px solid #00ff00;
+            padding: 4px 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div id="terminal"></div>
+
+<div class="input-line" id="inputContainer" style="display: none;">
+    <span class="prompt" id="promptText"></span>
+    <input type="text" id="userInput" autofocus autocomplete="off">
+</div>
+
+<script>
+    // 상태 변수 관리 (C언어의 변수 역할)
+    let state = 'NICKNAME'; // NICKNAME, TEXT_INPUT, NUMBER_INPUT
+    let Nick = '';
+    let CM = 0;
+    let M = 0n; // long long 대응 (BigInt)
+    let C = [];
+    let currentInputMessage = '';
+
+    const terminal = document.getElementById('terminal');
+    const inputContainer = document.getElementById('inputContainer');
+    const promptText = document.getElementById('promptText');
+    const userInput = document.getElementById('userInput');
+
+    // 화면 출력 함수 (printf 역할)
+    function print(text) {
+        terminal.innerText += text;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    // 줄바꿈 포함 출력
+    function println(text = '') {
+        print(text + '\n');
+    }
+
+    // 입력 창 표시 설정
+    function setPrompt(prompt) {
+        promptText.innerText = prompt;
+        userInput.value = '';
+        inputContainer.style.display = 'flex';
+        userInput.focus();
+    }
+
+    // 프로그램 시작
+    function startProgram() {
+        setPrompt("input the Nickname: ");
+    }
+
+    // 사용자 입력을 처리하는 이벤트 리스너
+    userInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const val = userInput.value;
+            print(promptText.innerText + val + '\n');
+            inputContainer.style.display = 'none';
+            handleInput(val);
+        }
+    });
+
+    // 상태 머신을 통한 입력 처리
+    function handleInput(value) {
+        if (state === 'NICKNAME') {
+            Nick = value;
+            println(`${Nick} user welcome to my C one line notepad&2binary string change\n`);
+            askTextMessage();
+        } 
+        else if (state === 'TEXT_INPUT') {
+            currentInputMessage = value;
+
+            // EXIT 명령 확인
+            if (isExitCommand(currentInputMessage)) {
+                println("Program exit.");
+                return; // 프로그램 종료
+            }
+
+            // 텍스트 저장
+            C.push(currentInputMessage);
+
+            // Binary 변환
+            let joinedBinaryString = getJoinedBinaryString(currentInputMessage);
+
+            // $ 정보 계산
+            M += BigInt(currentInputMessage.length + joinedBinaryString.length);
+
+            // Lewin Diaz 특별 기능
+            if (currentInputMessage === "Lewin Diaz") {
+                showLewinDiazStats();
+            }
+
+            // 다음 상태: 숫자 입력 받기
+            state = 'NUMBER_INPUT';
+            setPrompt("\nInput 3 numbers (for circle calculation, use A as radius) : ");
+        } 
+        else if (state === 'NUMBER_INPUT') {
+            const parts = value.trim().split(/\s+/);
+            
+            if (parts.length < 3 || isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2])) {
+                println("Invalid number input.");
+                // C 코드처럼 종료
+                return;
+            }
+
+            const A = parseFloat(parts[0]);
+            const B = parseFloat(parts[1]);
+            const C_val = parseFloat(parts[2]);
+
+            // 연산 실행
+            runCalculations(A, B, C_val);
+
+            // 텍스트 정보 및 이진수 출력
+            let joinedBinaryString = getJoinedBinaryString(currentInputMessage);
+            println(`\n${Nick} ${M.toString()}$ : ${C[CM]}`);
+            println(`change to binary string: ${joinedBinaryString}\n`);
+
+            CM++;
+
+            // 다음 입력 대기
+            askTextMessage();
+        }
+    }
+
+    function askTextMessage() {
+        state = 'TEXT_INPUT';
+        setPrompt("input the txt when want to exit input the exit: ");
+    }
+
+    /* =========================================================
+       유틸리티 및 연산 함수들 (C언어 기능 일치)
+       ========================================================= */
+
+    function isExitCommand(str) {
+        return str.toLowerCase() === 'exit';
+    }
+
+    function getJoinedBinaryString(inputMessage) {
+        if (inputMessage.length === 0) return '';
+
+        let bitsArray = [];
+        for (let i = 0; i < inputMessage.length; i++) {
+            let code = inputMessage.charCodeAt(i);
+            // 8비트 이진수 문자열 생성 (C언어의 8비트 변환 동일)
+            let bin = (code & 0xFF).toString(2).padStart(8, '0');
+            bitsArray.push(bin);
+        }
+        return bitsArray.join(' ');
+    }
+
+    function showLewinDiazStats() {
+        const stats = [
+            "Game\tSeason\t07.03\t07.02\t07.01\t06.30\t06.28\t06.27",
+            "Batting Average\t0.290\t0.000\t0.667\t0.500\t0.250\t0.000\t0.250",
+            "At Bats\t314\t4\t3\t2\t4\t4\t4",
+            "Hits\t91\t0\t2\t1\t1\t0\t1",
+            "Doubles\t17\t0\t1\t1\t1\t0\t0",
+            "Triples\t0\t0\t0\t0\t0\t0\t0",
+            "Home Runs\t15\t0\t0\t0\t0\t0\t0",
+            "RBIs\t68\t0\t0\t0\t0\t0\t0",
+            "Runs\t47\t0\t1\t2\t2\t0\t0",
+            "Stolen Bases\t2\t0\t1\t0\t0\t0\t0",
+            "Walks / HBP\t43\t1\t2\t2\t0\t0\t0",
+            "Strikeouts\t56\t0\t0\t0\t1\t1\t2",
+            "On-base Percentage\t0.372\t0.200\t0.800\t0.750\t0.500\t0.000\t0.250",
+            "Slugging Percentage\t0.487\t0.000\t1.000\t1.000\t0.500\t0.000\t0.250",
+            "OPS\t0.859\t0.200\t1.800\t1.750\t1.000\t0.000\t0.500"
+        ];
+
+        println("\n=========================================");
+        println("      Lewin Diaz Statistics (KBO)");
+        println("=========================================");
+        for (let i = 0; i < stats.length; i++) {
+            println(stats[i]);
+        }
+        println("=========================================");
+    }
+
+    function runCalculations(A, B, C_val) {
+        println("\n===== Engineering Calculator =====");
+        println(`A + B + C = ${(A + B + C_val).toFixed(2)}`);
+        println(`A - B - C = ${(A - B - C_val).toFixed(2)}`);
+        println(`A * B * C = ${(A * B * C_val).toFixed(2)}`);
+
+        if (B !== 0 && C_val !== 0) {
+            println(`A / B / C = ${(A / B / C_val).toFixed(6)}`);
+        } else {
+            println("A / B / C = Cannot divide by zero");
+        }
+
+        println("\n===== Circle Calculation (Radius: A) =====");
+        println(`Radius : ${A.toFixed(2)}`);
+        println(`Diameter : ${(A * 2).toFixed(2)}`);
+        println(`Circumference : ${(A * 2 * 3.14).toFixed(2)}`);
+        println(`Area : ${(A * A * 3.14).toFixed(2)}`);
+
+        println("\n===== Comparison =====");
+        println(`A > B = ${A > B ? 1 : 0}`);
+        println(`A < B = ${A < B ? 1 : 0}`);
+        println(`A >= B = ${A >= B ? 1 : 0}`);
+        println(`A <= B = ${A <= B ? 1 : 0}`);
+        println(`A == B = ${A === B ? 1 : 0}`);
+        println(`A != B = ${A !== B ? 1 : 0}`);
+
+        println("\n===== Square =====");
+        println(`A^2 = ${(A * A).toFixed(2)}`);
+        println(`B^2 = ${(B * B).toFixed(2)}`);
+        println(`C^2 = ${(C_val * C_val).toFixed(2)}`);
+
+        println("\n===== Cube =====");
+        println(`A^3 = ${(A * A * A).toFixed(2)}`);
+        println(`B^3 = ${(B * B * B).toFixed(2)}`);
+        println(`C^3 = ${(C_val * C_val * C_val).toFixed(2)}`);
+
+        println("\n===== Increment =====");
+        let N = 10;
+        println(`N = ${N}`);
+        N++;
+        println(`N++ = ${N}`);
+        N++;
+        println(`N++ = ${N}`);
+
+        println("\n===== Decrement =====");
+        N--;
+        println(`N-- = ${N}`);
+    }
+
+    // 실행 시작
+    startProgram();
+</script>
+</body>
+</html>
