@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Program Web Emulator</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: "Courier New", Courier, monospace;
+            padding: 20px;
+            margin: 0;
+        }
+
+        #terminal {
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .prompt {
+            color: #00ff00;
+            margin-right: 8px;
+        }
+
+        input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: inherit;
+            font-size: inherit;
+            outline: none;
+            width: 85%;
+        }
+
+        table {
+            border-collapse: collapse;
+            margin: 10px 0;
+            color: #00ff00;
+        }
+
+        th, td {
+            border: 1px solid #00ff00;
+            padding: 4px 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div id="terminal"></div>
+
+<div class="input-line" id="inputContainer" style="display: none;">
+    <span class="prompt" id="promptText"></span>
+    <input type="text" id="userInput" autofocus autocomplete="off">
+</div>
+
+<script>
+    /* =========================================================
+       Windows 2000 / old Internet Explorer compatible version
+       JavaScript: ES3-style syntax only
+       ========================================================= */
+
+    var state = 'NICKNAME';
+    var Nick = '';
+    var CM = 0;
+    var M = 0;
+    var C = [];
+    var currentInputMessage = '';
+
+    var terminal = document.getElementById('terminal');
+    var inputContainer = document.getElementById('inputContainer');
+    var promptText = document.getElementById('promptText');
+    var userInput = document.getElementById('userInput');
+
+    /* printf */
+    function print(text) {
+        if (text === null || typeof text === 'undefined') {
+            text = '';
+        }
+        terminal.innerText += text;
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    /* printf + newline */
+    function println(text) {
+        if (typeof text === 'undefined') {
+            text = '';
+        }
+        print(text + '\n');
+    }
+
+    function setPrompt(prompt) {
+        promptText.innerText = prompt;
+        userInput.value = '';
+        inputContainer.style.display = 'block';
+        try {
+            userInput.focus();
+        } catch (e) {}
+    }
+
+    function startProgram() {
+        setPrompt("input the Nickname: ");
+    }
+
+    /*
+       Old IE does not reliably support addEventListener().
+       attachEvent() works with Internet Explorer.
+    */
+    function inputKeyDown() {
+        var e = window.event;
+        if (e && e.keyCode === 13) {
+            var val = userInput.value;
+            print(promptText.innerText + val + '\n');
+            inputContainer.style.display = 'none';
+            handleInput(val);
+        }
+    }
+
+    if (userInput.attachEvent) {
+        userInput.attachEvent('onkeydown', inputKeyDown);
+    } else {
+        userInput.onkeydown = inputKeyDown;
+    }
+
+    function handleInput(value) {
+        if (state === 'NICKNAME') {
+            Nick = value;
+            println(Nick + " user welcome to my C one line notepad&2binary string change\n");
+            askTextMessage();
+        }
+        else if (state === 'TEXT_INPUT') {
+            currentInputMessage = value;
+
+            if (isExitCommand(currentInputMessage)) {
+                println("Program exit.");
+                return;
+            }
+
+            C.push(currentInputMessage);
+
+            var joinedBinaryString = getJoinedBinaryString(currentInputMessage);
+
+            /*
+               BigInt is unavailable in old IE.
+               Number is sufficient for this program's money counter.
+            */
+            M += currentInputMessage.length + joinedBinaryString.length;
+
+            if (currentInputMessage === "Lewin Diaz") {
+                showLewinDiazStats();
+            }
+
+            state = 'NUMBER_INPUT';
+            setPrompt("\nInput 3 numbers (for circle calculation, use A as radius) : ");
+        }
+        else if (state === 'NUMBER_INPUT') {
+            var parts = value.replace(/^\s+|\s+$/g, '').split(/\s+/);
+
+            if (parts.length < 3 ||
+                isNaN(parts[0]) ||
+                isNaN(parts[1]) ||
+                isNaN(parts[2])) {
+                println("Invalid number input.");
+                return;
+            }
+
+            var A = parseFloat(parts[0]);
+            var B = parseFloat(parts[1]);
+            var C_val = parseFloat(parts[2]);
+
+            runCalculations(A, B, C_val);
+
+            var joinedBinaryString2 = getJoinedBinaryString(currentInputMessage);
+
+            println("\n" + Nick + " " + M + "$ : " + C[CM]);
+            println("change to binary string: " + joinedBinaryString2 + "\n");
+
+            CM++;
+
+            askTextMessage();
+        }
+    }
+
+    function askTextMessage() {
+        state = 'TEXT_INPUT';
+        setPrompt("input the txt when want to exit input the exit: ");
+    }
+
+    function isExitCommand(str) {
+        return str.toLowerCase() === 'exit';
+    }
+
+    /*
+       Same 8-bit behavior as the supplied file:
+       each JavaScript character is converted using charCodeAt()
+       and only the low 8 bits are used.
+    */
+    function getJoinedBinaryString(inputMessage) {
+        if (inputMessage.length === 0) {
+            return '';
+        }
+
+        var bitsArray = [];
+        var i;
+        var code;
+        var bin;
+
+        for (i = 0; i < inputMessage.length; i++) {
+            code = inputMessage.charCodeAt(i);
+            bin = (code & 0xFF).toString(2);
+
+            while (bin.length < 8) {
+                bin = '0' + bin;
+            }
+
+            bitsArray.push(bin);
+        }
+
+        return bitsArray.join(' ');
+    }
+
+    function showLewinDiazStats() {
+        var stats = [
+            "Game\tSeason\t07.03\t07.02\t07.01\t06.30\t06.28\t06.27",
+            "Batting Average\t0.290\t0.000\t0.667\t0.500\t0.250\t0.000\t0.250",
+            "At Bats\t314\t4\t3\t2\t4\t4\t4",
+            "Hits\t91\t0\t2\t1\t1\t0\t1",
+            "Doubles\t17\t0\t1\t1\t1\t0\t0",
+            "Triples\t0\t0\t0\t0\t0\t0\t0",
+            "Home Runs\t15\t0\t0\t0\t0\t0\t0",
+            "RBIs\t68\t0\t0\t0\t0\t0\t0",
+            "Runs\t47\t0\t1\t2\t2\t0\t0",
+            "Stolen Bases\t2\t0\t1\t0\t0\t0\t0",
+            "Walks / HBP\t43\t1\t2\t2\t0\t0\t0",
+            "Strikeouts\t56\t0\t0\t0\t1\t1\t2",
+            "On-base Percentage\t0.372\t0.200\t0.800\t0.750\t0.500\t0.000\t0.250",
+            "Slugging Percentage\t0.487\t0.000\t1.000\t1.000\t0.500\t0.000\t0.250",
+            "OPS\t0.859\t0.200\t1.800\t1.750\t1.000\t0.000\t0.500"
+        ];
+
+        var i;
+
+        println("\n=========================================");
+        println("      Lewin Diaz Statistics (KBO)");
+        println("=========================================");
+
+        for (i = 0; i < stats.length; i++) {
+            println(stats[i]);
+        }
+
+        println("=========================================");
+    }
+
+    function runCalculations(A, B, C_val) {
+        println("\n===== Engineering Calculator =====");
+        println("A + B + C = " + (A + B + C_val).toFixed(2));
+        println("A - B - C = " + (A - B - C_val).toFixed(2));
+        println("A * B * C = " + (A * B * C_val).toFixed(2));
+
+        if (B !== 0 && C_val !== 0) {
+            println("A / B / C = " + (A / B / C_val).toFixed(6));
+        } else {
+            println("A / B / C = Cannot divide by zero");
+        }
+
+        println("\n===== Circle Calculation (Radius: A) =====");
+        println("Radius : " + A.toFixed(2));
+        println("Diameter : " + (A * 2).toFixed(2));
+        println("Circumference : " + (A * 2 * 3.14).toFixed(2));
+        println("Area : " + (A * A * 3.14).toFixed(2));
+
+        println("\n===== Comparison =====");
+        println("A > B = " + (A > B ? 1 : 0));
+        println("A < B = " + (A < B ? 1 : 0));
+        println("A >= B = " + (A >= B ? 1 : 0));
+        println("A <= B = " + (A <= B ? 1 : 0));
+        println("A == B = " + (A === B ? 1 : 0));
+        println("A != B = " + (A !== B ? 1 : 0));
+
+        println("\n===== Square =====");
+        println("A^2 = " + (A * A).toFixed(2));
+        println("B^2 = " + (B * B).toFixed(2));
+        println("C^2 = " + (C_val * C_val).toFixed(2));
+
+        println("\n===== Cube =====");
+        println("A^3 = " + (A * A * A).toFixed(2));
+        println("B^3 = " + (B * B * B).toFixed(2));
+        println("C^3 = " + (C_val * C_val * C_val).toFixed(2));
+
+        println("\n===== Increment =====");
+        var N = 10;
+        println("N = " + N);
+
+        N++;
+        println("N++ = " + N);
+
+        N++;
+        println("N++ = " + N);
+
+        println("\n===== Decrement =====");
+        N--;
+        println("N-- = " + N);
+    }
+
+    startProgram();
+</script>
+</body>
+</html>
